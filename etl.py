@@ -21,15 +21,15 @@ s3_resource = boto3.resource('s3')
 
 def get_data_from_api():
     url = config.get('URL')
-    headers = ast.literal_eval(config.get('HEADERS'))
-    querystring = ast.literal_eval(config.get('QUERYSTRING'))
+    headers = config.get('HEADERS')
+    querystring = config.get('QUERYSTRING')
     try:
         # Send request to Rapid API and return the response as a Json object
-        response = requests.get(url, headers=headers, params=querystring).json()
+        response = requests.get(url, headers=headers, params=querystring).text
     except ConnectionError:
         print('Unable to connect to the URL endpoint')
     coin_data = response.get('data').get('coins')
-    columns = ['symbol', 'name', 'price', 'rank', 'btcPrice', 'lowVolume']
+    columns = ['symbol', 'name', 'price', 'rank']
     crypto_price_data = pd.DataFrame(coin_data)[columns]
     return crypto_price_data
 
@@ -49,3 +49,4 @@ def write_to_s3(data, bucket_name, folder):
     csv_str = csv_buffer.getvalue() # Get the csv string
     # using the put_object(write) operation to write the data into s3
     s3_client.put_object(Bucket=bucket_name, Key=f'{folder}/{file_name}', Body=csv_str ) 
+
